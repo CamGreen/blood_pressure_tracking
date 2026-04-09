@@ -3,7 +3,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 from supabase import create_client, Client
 
-
 @st.cache_resource
 def get_supabase() -> Client:
     try:
@@ -92,38 +91,28 @@ with tab_log:
 # TAB: Medications
 # ============================================================
 with tab_meds:
-    st.subheader("Log Medication")
+    st.subheader("Medication")
+    st.markdown("Did you take your medication today?")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        med_date = st.date_input("Date", value=datetime.now().date(), key="med_date")
-        med_name = st.text_input("Medication name", key="med_name")
-    with col2:
-        med_time = st.time_input("Time", value=datetime.now().time(), key="med_time")
-        med_dosage = st.text_input("Dosage (e.g. 10mg)", key="med_dosage")
-
-    med_notes = st.text_input("Notes (optional)", key="med_notes")
-
-    if st.button("Log Medication", type="primary", use_container_width=True):
-        if not med_name.strip():
-            st.error("Please enter a medication name.")
-        else:
-            ts = datetime.combine(med_date, med_time).isoformat()
+    col_left, col_mid, col_right = st.columns([1, 2, 1])
+    with col_mid:
+        if st.button("Yes, I took my medication", type="primary", use_container_width=True):
+            ts = datetime.now().isoformat()
             supabase.table("medications").insert({
                 "user": active_user,
                 "timestamp": ts,
-                "name": med_name.strip(),
-                "dosage": med_dosage.strip(),
-                "notes": med_notes.strip(),
+                "name": "Medication",
+                "dosage": "",
+                "notes": "",
             }).execute()
-            st.success(f"Logged: {med_name} {med_dosage} at {med_time.strftime('%H:%M')}")
+            st.success(f"Logged at {datetime.now().strftime('%H:%M')}")
             st.rerun()
 
     st.divider()
     st.subheader("Recent Medication Log")
     result = (
         supabase.table("medications")
-        .select("id,timestamp,name,dosage,notes")
+        .select("id,timestamp")
         .eq("user", active_user)
         .order("timestamp", desc=True)
         .limit(20)
@@ -132,12 +121,11 @@ with tab_meds:
     med_df = pd.DataFrame(result.data)
 
     if med_df.empty:
-        st.info("No medications logged yet.")
+        st.info("No medication logged yet.")
     else:
         med_df["timestamp"] = pd.to_datetime(med_df["timestamp"]).dt.strftime("%Y-%m-%d %H:%M")
         st.dataframe(
-            med_df.rename(columns={"timestamp": "Date/Time", "name": "Medication", "dosage": "Dosage", "notes": "Notes"})
-            .drop(columns=["id"]),
+            med_df.rename(columns={"timestamp": "Date/Time"}).drop(columns=["id"]),
             use_container_width=True,
             hide_index=True,
         )
