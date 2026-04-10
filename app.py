@@ -123,7 +123,7 @@ with tab_meds:
     if med_df.empty:
         st.info("No medication logged yet.")
     else:
-        med_df["timestamp"] = pd.to_datetime(med_df["timestamp"]).dt.strftime("%Y-%m-%d %H:%M")
+        med_df["timestamp"] = pd.to_datetime(med_df["timestamp"], format="ISO8601").dt.strftime("%Y-%m-%d %H:%M")
         st.dataframe(
             med_df.rename(columns={"timestamp": "Date/Time"}).drop(columns=["id"]),
             use_container_width=True,
@@ -148,7 +148,7 @@ with tab_history:
     if hist_df.empty:
         st.info("No readings recorded yet. Go to 'Log Reading' to add one.")
     else:
-        hist_df["timestamp"] = pd.to_datetime(hist_df["timestamp"])
+        hist_df["timestamp"] = pd.to_datetime(hist_df["timestamp"], format="ISO8601")
 
         date_range = st.date_input(
             "Date range",
@@ -215,7 +215,7 @@ with tab_charts:
     if chart_df.empty:
         st.info("No data to chart yet. Add some readings first.")
     else:
-        chart_df["timestamp"] = pd.to_datetime(chart_df["timestamp"])
+        chart_df["timestamp"] = pd.to_datetime(chart_df["timestamp"], format="ISO8601")
 
         period = st.radio("Time period", ["7 days", "30 days", "90 days", "All"], horizontal=True)
         if period != "All":
@@ -263,7 +263,7 @@ with tab_stats:
     if stats_df.empty:
         st.info("No data for statistics yet.")
     else:
-        stats_df["timestamp"] = pd.to_datetime(stats_df["timestamp"])
+        stats_df["timestamp"] = pd.to_datetime(stats_df["timestamp"], format="ISO8601")
 
         # Summary cards
         c1, c2, c3, c4 = st.columns(4)
